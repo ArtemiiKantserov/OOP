@@ -2,6 +2,7 @@
 #define GAME_FIELD_H
 
 #include "Ship.h"
+#include "Exceptions.h"
 
 class GameField
 {
@@ -35,6 +36,7 @@ public:
   GameField& operator=(GameField&& other);
   ~GameField();
   auto add_ship(Ship* ship, int x, int y, bool orientation) -> void;
+  auto add_ship_save(Ship* ship, int x, int y, bool orientation) -> void;
   auto attack(int x, int y, bool dual) -> bool;
   auto hidedn_attack(int x, int y, bool dual) ->bool;
   // метод устанавливающий статус UNKNOW во всех клетках

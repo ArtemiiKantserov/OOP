@@ -3,6 +3,7 @@
 
 #include "Ship.h"
 #include "GameField.h"
+#include "Exceptions.h"
 
 class ShipManager
 {
@@ -15,6 +16,7 @@ public:
   ~ShipManager();
   // добавление определённого корабля на поле
   auto add_ship(GameField* field, int x, int y, bool orientastion, int number_ship) -> void;
+  auto add_ship_save(GameField* field, int x, int y, bool orientastion, int number_ship) -> void;
   // проверка есть ли ещё целые корабли
   auto end() -> bool;
   auto get_number_ships() -> int;

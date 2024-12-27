@@ -1,2 +1,2 @@
 all:
-	g++ -g main.cpp ./sources/Game.cpp ./sources/GameField.cpp ./sources/ShipManager.cpp ./sources/Ship.cpp ./sources/FileManager.cpp ./sources/Shelling.cpp ./sources/Scan.cpp ./sources/DoubleDamage.cpp ./sources/AbilityManager.cpp ./sources/GameState.cpp -o main
+	g++ -g main.cpp ./sources/Game.cpp ./sources/Exceptions.cpp ./sources/GameField.cpp ./sources/ShipManager.cpp ./sources/Ship.cpp ./sources/FileManager.cpp ./sources/Shelling.cpp ./sources/Scan.cpp ./sources/DoubleDamage.cpp ./sources/AbilityManager.cpp ./sources/GameState.cpp -o main

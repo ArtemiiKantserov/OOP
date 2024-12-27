@@ -4,6 +4,7 @@
 #include "AbilityManager.h"
 #include "GameState.h"
 #include "FileManager.h"
+#include "Exceptions.h"
 
 #include <random>
 

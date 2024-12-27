@@ -80,6 +80,9 @@ auto AbilityManager::add_abiliry_rand() -> void {
 }
 
 auto AbilityManager::use_ability(int x, int y, GameField* field, bool& dual) -> bool {
+  if (array_ability_.empty()) {
+    throw LackAbillity();
+  }
   bool fl = array_ability_[0]->useAbility(x, y, field, dual);
   for (int i = 0; i < array_ability_.size() - 1; ++i) {
     types_[i] = types_[i + 1];

@@ -14,7 +14,11 @@ auto Game::start_game(int x, int y, int ship_num, std::vector<int> ship_sizes) -
   user_ability_ = new AbilityManager();
   user_ships_ = new ShipManager(ship_num, ship_sizes);
   comp_ships_ = new ShipManager(ship_num, ship_sizes);
+  try {
   random_placement(false);
+  } catch (const char* e) {
+    throw e;
+  }
   comp_field_->fog_war();
 }
 
@@ -24,8 +28,12 @@ auto Game::add_ship_field(int x, int y, int index, bool orientation) -> void {
   placement.x = x;
   placement.y = y;
   placement.orientation = orientation;
+  try{
+    user_ships_->add_ship(user_field_, x, y, orientation, index);
+  } catch (IncorrectPlaceShip& e) {
+    throw e;
+  }
   user_placement_.push_back(placement);
-  user_ships_->add_ship(user_field_, x, y, orientation, index);
 }
 
 auto Game::comp_turn() -> bool {
@@ -40,15 +48,22 @@ auto Game::comp_turn() -> bool {
   return user_ships_->end();
 }
 
-auto Game::user_turn(Turn turn, int x, int y, bool& dual) -> bool{
+auto Game::user_turn(Turn turn, int x, int y, bool& dual) -> bool{\
+  if (x > comp_field_->get_width() || x <= 0 || y <= 0 || y > comp_field_->get_height()) {
+    throw WrongCoordinates();
+  }
   if (turn == Turn::ATTACK) {
     if (comp_field_->attack(x, y, dual)) {
       user_ability_->add_abiliry_rand();
     }
     dual = false;
   } else {
+    try {
     if (user_ability_->use_ability(x, y, comp_field_, dual)) {
       user_ability_->add_abiliry_rand();
+    }
+    } catch (LackAbillity& e) {
+      throw e;
     }
   }
   return comp_ships_->end();
@@ -59,7 +74,12 @@ auto Game::new_round() -> void {
   delete comp_ships_;
   comp_field_ = new GameField(user_field_->get_width(), user_field_->get_height());
   comp_ships_ = new ShipManager(user_ships_->get_number_ships(), user_ships_->get_sizes());
+  comp_placement_.clear();
+  try{
   random_placement(false);
+  } catch (const char* e) {
+    throw e;
+  }
   comp_field_->fog_war();
 }
 
@@ -76,6 +96,7 @@ auto Game::save_game(std::string file_name) -> void {
 }
 
 auto Game::load_game(std::string file_name) -> void {
+  try {
   FileManager file(file_name, FileManager::Target::READ);
   file.read_state(state_);
   comp_field_ = new GameField(state_.get_game_field(GameState::PlayerType::COMPUTER));
@@ -85,6 +106,13 @@ auto Game::load_game(std::string file_name) -> void {
   comp_ships_ = new ShipManager(state_.get_ship_manager(GameState::PlayerType::COMPUTER));
   aserialize(state_.get_ship_placement(GameState::PlayerType::PLAYER), true);
   aserialize(state_.get_ship_placement(GameState::PlayerType::COMPUTER), false);
+  for (int i = 0; i < comp_ships_->get_number_ships() ; ++i) {
+    comp_ships_->add_ship_save(comp_field_, comp_placement_[i].x, comp_placement_[i].y, comp_placement_[i].orientation, comp_placement_[i].index);
+    add_ship_field(user_placement_[i].x, user_placement_[i].y, user_placement_[i].index, user_placement_[i].orientation);
+  }
+  } catch (...) {
+    throw "file is bad.";
+  }
 }
 
 auto Game::random_placement(bool who) -> void {
@@ -96,29 +124,26 @@ auto Game::random_placement(bool who) -> void {
   bool orientation;
   GameField::ShipPlacement placement;
   if (!who) {
+    int count = comp_field_->get_width() * comp_field_->get_height() * 4, in = 0;
     for (int i = 0; i < comp_ships_->get_number_ships(); ++i) {
       placement.index = i;
       x = coordX(gen);
       y = coordY(gen);
       orientation = coordX(gen) % 2 ? true : false;
-      // try {
+      try {
         comp_ships_->add_ship(comp_field_, x, y, orientation, i);
         placement.x = x;
         placement.y = y;
         placement.orientation = orientation;
-        comp_placement_.push_back(placement);
-      // } catch {
-      // }
-    }
-  } else {
-    for (int i = 0; i < comp_ships_->get_number_ships(); ++i) {
-      x = coordX(gen);
-      y = coordY(gen);
-      orientation = coordX(gen) % 2 ? true : false;
-      // try {
-        comp_ships_->add_ship(comp_field_, x, y, orientation, i);
-      // } catch () {
-      // }
+      } catch (IncorrectPlaceShip& e){
+        ++in;
+        if (in == count) {
+          throw "computer cry.";
+        }
+        --i;
+        continue;
+      }
+      comp_placement_.push_back(placement);
     }
   }
 }
@@ -156,7 +181,7 @@ auto Game::serialize(bool who) -> std::string {
   return res;
 }
 
-auto  Game::aserialize(std::string str, bool who) -> void{
+auto  Game::aserialize(std::string str, bool who) -> void {
   GameField::ShipPlacement placement;
   if (!who) {
     for (int i = 0; i < comp_ships_->get_number_ships(); ++i) {

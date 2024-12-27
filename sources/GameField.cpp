@@ -6,7 +6,7 @@ GameField::GameField(std::string str) {
   width_ = std::stoi(str.substr(0, str.find(" ")));
   str = str.substr(str.find(" ") + 1);
   height_ = std::stoi(str.substr(0, str.find(" ")));
-  str = str.substr(str.find(" ") + 1);
+  str = str.substr(str.find(" ") + 1);  
   field_ = std::vector<std::vector<CellCharacteristics*>>(height_ + 2, std::vector<CellCharacteristics*>(width_ + 2, nullptr));
   for (int y = 0; y < height_ + 2; ++y) {
     for (int x = 0; x < width_ + 2; ++x) {
@@ -21,7 +21,18 @@ GameField::GameField(std::string str) {
   }
   for (int y = 1; y < height_ + 1; ++y) {
     for (int x = 1; x < width_ + 1; ++x)
-      field_[y][x]->status = Status(std::stoi(str.substr(x-1, 1)));
+      switch (std::stoi(str.substr(x-1, 1)))
+      {
+      case 0:
+        field_[y][x]->status = GameField::Status::UNKNOW;
+        break;
+      case 1:
+        field_[y][x]->status = GameField::Status::SHIP;
+        break;
+      case 2:
+        field_[y][x]->status = GameField::Status::SEA;
+        break;
+      }
     str = str.substr(width_);
   }
 }
@@ -80,15 +91,69 @@ GameField::~GameField() {
 
 auto GameField::add_ship(Ship* ship, int x, int y, bool orientation) -> void {
   if (orientation) {
+    if (y + ship->get_length() - 1 > height_ ) {
+      throw IncorrectPlaceShip();
+    }
+    for (int i = -1; i < ship->get_length() + 1; ++i) {
+      for (int j = -1; j < 2; ++j) {
+        if (field_[y+i][x+j]->ship != nullptr) {
+          throw IncorrectPlaceShip();
+        }
+      }
+    }
     for (int i = 0; i < ship->get_length(); ++i) {
       field_[y+i][x]->ship = ship;
       field_[y+i][x]->status = GameField::Status::SHIP;
       field_[y+i][x]->segment_ship = i;
     }
   } else {
+    if (x + ship->get_length() - 1 > width_ ) {
+      throw IncorrectPlaceShip();
+    }
+    for (int i = -1; i < ship->get_length() + 1; ++i) {
+      for (int j = -1; j < 2; ++j) {
+        if (field_[y+j][x+i]->ship != nullptr) {
+          throw IncorrectPlaceShip();
+        }
+      }
+    }
     for (int i = 0; i < ship->get_length(); ++i) {
       field_[y][x+i]->ship = ship;
       field_[y][x+i]->status = GameField::Status::SHIP;
+      field_[y][x+i]->segment_ship = i;
+    }
+  }
+}
+
+auto GameField::add_ship_save(Ship* ship, int x, int y, bool orientation) -> void {
+  if (orientation) {
+    if (y + ship->get_length() - 1 > height_ ) {
+      throw IncorrectPlaceShip();
+    }
+    for (int i = -1; i < ship->get_length() + 1; ++i) {
+      for (int j = -1; j < 2; ++j) {
+        if (field_[y+i][x+j]->ship != nullptr) {
+          throw IncorrectPlaceShip();
+        }
+      }
+    }
+    for (int i = 0; i < ship->get_length(); ++i) {
+      field_[y+i][x]->ship = ship;
+      field_[y+i][x]->segment_ship = i;
+    }
+  } else {
+    if (x + ship->get_length() - 1 > width_ ) {
+      throw IncorrectPlaceShip();
+    }
+    for (int i = -1; i < ship->get_length() + 1; ++i) {
+      for (int j = -1; j < 2; ++j) {
+        if (field_[y+j][x+i]->ship != nullptr) {
+          throw IncorrectPlaceShip();
+        }
+      }
+    }
+    for (int i = 0; i < ship->get_length(); ++i) {
+      field_[y][x+i]->ship = ship;
       field_[y][x+i]->segment_ship = i;
     }
   }

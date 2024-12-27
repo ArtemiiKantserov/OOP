@@ -4,12 +4,12 @@ FileManager::FileManager(std::string file_name, Target target) {
   if (target == Target::READ) {
     input_file_.open(file_name);
     if (!input_file_.is_open()){
-      //hui
+      throw "file is bad";
     }
   } else {
     output_file_.open(file_name);
     if (!output_file_.is_open()){
-      //hui
+      throw "file is bad";
     }
   }
 }

@@ -25,7 +25,7 @@ void rendering(Game* game) {
         std::cout << "~ ";
         break;
       case GameField::Status::UNKNOW:
-        std::cout << "0 ";
+        std::cout << "o ";
         break;
       case GameField::Status::SHIP:
         switch (cell->ship->get_status_segement(cell->segment_ship)) {
@@ -79,8 +79,13 @@ int main () {
     std::cin >> ab;
     int x = 0, y = 0;
     if (ab) {
+      try{
       game->start_game("game.txt");
+      } catch (const char* e) {
+        std::cout << e << std::endl;
+      }
     } else {
+      ab = 0;
       int count_ship = 0, size = 0;
       std::vector<int> sizes;
       std::cout << "x y" << std::endl;
@@ -92,7 +97,12 @@ int main () {
         std::cin >> size;
         sizes.push_back(size);
       }
+      try {
       game->start_game(x, y, count_ship, sizes);
+      } catch (const char* e) {
+        std::cout << e << std::endl;
+        continue;
+      }
       int xs = 0, yx = 0, o = 0;
       bool orientation;
       for (int i = 0; i < count_ship; ++i) {
@@ -103,7 +113,12 @@ int main () {
         } else {
           orientation = false;
         }
+        try {
         game->add_ship_field(x, y, i, orientation);
+        } catch (IncorrectPlaceShip& e){
+          --i;
+          std::cout << e.what() << std::endl;
+        }
       }
     }
     // std::system("cls");
@@ -126,11 +141,21 @@ int main () {
       if (ab) {
         game->save_game("game.txt");
       }
+      std::cout << "load?" << std::endl;
+      std::cin >> ab;
+      if (ab) {
+        try{
+        game->load_game("game.txt");
+        } catch (const char* e) {
+          std::cout << e << std::endl;
+        }
+      }
       std::cout << "ability?" << std::endl;
       std::cin >> ab;
       if (ab) {
         std::cout << "x y" << std::endl;
         std::cin >> x >> y;
+        try {
         if (game->user_turn(Game::Turn::ABILITY, x, y, dual)) {
           // std::system("cls");
           rendering(game);
@@ -143,11 +168,17 @@ int main () {
             fl = true;
           }
         }
+        } catch (LackAbillity& e) {
+          std::cout << e.what() << std::endl;
+        } catch (WrongCoordinates& e) {
+          std::cout << e.what() << std::endl;
+        }
       }
       // std::system("cls");
       rendering(game);
       std::cout << "atack\nx y" << std::endl;
       std::cin >> x >> y;
+      try{
       if (game->user_turn(Game::Turn::ATTACK, x, y, dual)) {
         // std::system("cls");
         rendering(game);
@@ -159,6 +190,9 @@ int main () {
         } else {
           fl = true;
         }
+      }
+      } catch (WrongCoordinates& e) {
+        std::cout << e.what() << std::endl;
       }
       // std::system("cls");
       rendering(game);

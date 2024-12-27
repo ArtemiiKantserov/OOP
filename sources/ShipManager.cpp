@@ -23,7 +23,19 @@ ShipManager::~ShipManager() {
 }
 
 auto ShipManager::add_ship(GameField* field, int x, int y, bool orientastion, int number_ship) -> void {
+  try {
   field->add_ship(array_ships_[number_ship], x, y, orientastion);
+  } catch (IncorrectPlaceShip& e) {
+    throw e;
+  }
+}
+
+auto ShipManager::add_ship_save(GameField* field, int x, int y, bool orientastion, int number_ship) -> void {
+  try {
+  field->add_ship_save(array_ships_[number_ship], x, y, orientastion);
+  } catch (IncorrectPlaceShip& e) {
+    throw e;
+  }
 }
 
 auto ShipManager::end() -> bool {
